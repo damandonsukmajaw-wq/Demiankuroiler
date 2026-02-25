@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Demian Kuroiler App</title>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#fff8f0;
+padding-bottom:70px;
+}
+
+header{
+background:#ff6600;
+color:white;
+padding:16px;
+text-align:center;
+font-size:22px;
+font-weight:bold;
+}
+
+.page{
+display:none;
+padding:15px;
+max-width:600px;
+margin:auto;
+}
+
+.active{
+display:block;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+
+.card img{
+width:100%;
+height:180px;
+object-fit:cover;
+border-radius:10px;
+}
+
+button{
+background:#ff6600;
+color:white;
+border:none;
+padding:12px;
+width:100%;
+border-radius:8px;
+cursor:pointer;
+margin-top:10px;
+font-size:16px;
+}
+
+button:hover{
+background:#e65c00;
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin-top:8px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+nav{
+position:fixed;
+bottom:0;
+width:100%;
+background:#ff6600;
+display:flex;
+justify-content:space-around;
+padding:10px;
+}
+
+nav button{
+background:none;
+border:none;
+color:white;
+font-size:14px;
+}
+
+.totalBox{
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+font-weight:bold;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+#toast{
+visibility:hidden;
+background:#333;
+color:white;
+padding:15px;
+position:fixed;
+bottom:70px;
+left:50%;
+transform:translateX(-50%);
+border-radius:8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+Demian Kuroiler App
+</header>
+
+<!-- HOME -->
+
+<div id="home" class="page active">
+
+<div class="card">
+<h3>Welcome</h3>
+<p>Fresh Farm Kuroiler Chicken Available</p>
+<p>Order directly via WhatsApp</p>
+</div>
+
+</div>
+
+<!-- PRODUCTS -->
+
+<div id="products" class="page">
+
+<h3>Available Products</h3>
+
+<div id="productList"></div>
+
+</div>
+
+<!-- DETAIL -->
+
+<div id="detail" class="page">
+
+<button onclick="showPage('products')">
+← Back
+</button>
+
+<h3 id="dName"></h3>
+
+<img id="dImg">
+
+<p id="dPrice"></p>
+
+<label>Customer Name</label>
+<input id="custName">
+
+<label>Phone Number</label>
+<input id="custPhone">
+
+<label>Quantity (KG)</label>
+<input id="qty" type="number" value="1">
+
+<label>Notes</label>
+<textarea id="notes"></textarea>
+
+<button onclick="placeOrder()">
+Order via WhatsApp
+</button>
+
+</div>
+
+<!-- ORDERS -->
+
+<div id="orders" class="page">
+
+<h3>Admin Panel</h3>
+
+<div class="totalBox">
+Total Sales: ₹<span id="totalSales">0</span>
+</div>
+
+<ul id="orderList"></ul>
+
+<button onclick="clearOrders()">
+Clear All Orders
+</button>
+
+</div>
+
+<!-- CONTACT -->
+
+<div id="contact" class="page">
+
+<h3>Contact Us</h3>
+
+<button onclick="contactWhatsApp()">
+WhatsApp: 8787557480
+</button>
+
+</div>
+
+<div id="toast">
+Order Sent Successfully
+</div>
+
+<!-- NAV -->
+
+<nav>
+
+<button onclick="showPage('home')">
+Home
+</button>
+
+<button onclick="showPage('products')">
+Products
+</button>
+
+<button onclick="showPage('orders')">
+Admin
+</button>
+
+<button onclick="showPage('contact')">
+Contact
+</button>
+
+</nav>
+
+<script>
+
+/* CONFIG */
+
+const BUSINESS_PHONE="8787557480"
+
+/* PRODUCTS */
+
+const products=[
+
+{
+name:"Feet, Wings & Neck",
+price:300,
+img:"https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=600"
+},
+
+{
+name:"Liver",
+price:500,
+img:"https://images.unsplash.com/photo-1625944525533-473f1a3d54e7?w=600"
+},
+
+{
+name:"Kuroiler Meat",
+price:500,
+img:"https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600"
+}
+
+]
+
+let currentProduct=""
+let currentPrice=0
+
+/* NAV */
+
+function showPage(id){
+
+document.querySelectorAll(".page")
+.forEach(p=>p.classList.remove("active"))
+
+document.getElementById(id)
+.classList.add("active")
+
+}
+
+/* LOAD PRODUCTS */
+
+function loadProducts(){
+
+let html=""
+
+products.forEach(p=>{
+
+html+=`
+
+<div class="card">
+
+<img src="${p.img}">
+
+<h3>${p.name}</h3>
+
+<p>Price: ₹${p.price} per KG</p>
+
+<button onclick="openDetail('${p.name}',${p.price},'${p.img}')">
+
+Order Now
+
+</button>
+
+</div>
+
+`
+
+})
+
+productList.innerHTML=html
+
+}
+
+/* OPEN DETAIL */
+
+function openDetail(name,price,img){
+
+currentProduct=name
+currentPrice=price
+
+dName.innerText=name
+dPrice.innerText="Price ₹"+price+" per KG"
+dImg.src=img
+
+showPage("detail")
+
+}
+
+/* PLACE ORDER */
+
+function placeOrder(){
+
+let name=custName.value
+let phone=custPhone.value
+let qty=parseFloat(qty.value)
+let notes=document.getElementById("notes").value
+
+if(!name||!phone){
+
+alert("Enter name and phone")
+return
+
+}
+
+let total=qty*currentPrice
+
+let order={
+name,
+phone,
+product:currentProduct,
+qty,
+total,
+notes,
+time:new Date().toLocaleString()
+}
+
+let orders=
+JSON.parse(localStorage.getItem("orders"))||[]
+
+orders.push(order)
+
+localStorage.setItem("orders",
+JSON.stringify(orders))
+
+let msg=
+
+`NEW KUROILER ORDER
+
+Customer: ${name}
+Phone: ${phone}
+
+Product: ${currentProduct}
+Quantity: ${qty} KG
+
+Total: ₹${total}
+
+Notes: ${notes}
+
+- Demian Kuroiler App`
+
+window.open(
+`https://wa.me/${BUSINESS_PHONE}?text=${encodeURIComponent(msg)}`
+)
+
+/* RESET */
+
+custName.value=""
+custPhone.value=""
+qty.value=1
+notes.value=""
+
+showToast()
+loadOrders()
+
+}
+
+/* LOAD ORDERS */
+
+function loadOrders(){
+
+let orders=
+JSON.parse(localStorage.getItem("orders"))||[]
+
+let html=""
+let total=0
+
+orders.forEach((o,i)=>{
+
+total+=o.total
+
+html+=`
+
+<li>
+
+${i+1}. ${o.name}
+- ${o.product}
+- ${o.qty} KG
+- ₹${o.total}
+
+</li>
+
+`
+
+})
+
+orderList.innerHTML=html
+totalSales.innerText=total
+
+}
+
+/* CLEAR */
+
+function clearOrders(){
+
+localStorage.removeItem("orders")
+loadOrders()
+
+}
+
+/* TOAST */
+
+function showToast(){
+
+toast.style.visibility="visible"
+
+setTimeout(()=>{
+toast.style.visibility="hidden"
+},2000)
+
+}
+
+/* CONTACT */
+
+function contactWhatsApp(){
+
+window.open(`https://wa.me/${BUSINESS_PHONE}`)
+
+}
+
+/* INIT */
+
+loadProducts()
+loadOrders()
+
+</script>
+
+</body>
+</html>
